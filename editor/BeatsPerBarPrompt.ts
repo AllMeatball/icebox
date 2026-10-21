@@ -42,7 +42,7 @@ export class BeatsPerBarPrompt implements Prompt {
 		this._beatsStepper.min = Config.beatsPerBarMin + "";
 		this._beatsStepper.max = Config.beatsPerBarMax + "";
 			
-		const lastStrategy: string | null = window.localStorage.getItem("beatCountStrategy");
+		const lastStrategy: string | null = this._doc.prefs.loadSetting("beatCountStrategy");
 		if (lastStrategy != null) {
 			this._conversionStrategySelect.value = lastStrategy;
 		}
@@ -94,7 +94,7 @@ export class BeatsPerBarPrompt implements Prompt {
 	}
 		
 	private _saveChanges = (): void => {
-		window.localStorage.setItem("beatCountStrategy", this._conversionStrategySelect.value);
+		this._doc.prefs.saveSetting("beatCountStrategy", this._conversionStrategySelect.value);
 		this._doc.prompt = null;
 		this._doc.record(new ChangeBeatsPerBar(this._doc, BeatsPerBarPrompt._validate(this._beatsStepper), this._conversionStrategySelect.value), true);
 	}

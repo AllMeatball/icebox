@@ -124,13 +124,13 @@ export class CustomFilterPrompt implements Prompt {
 		const filterCopy: any = this._useNoteFilter
 			? this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].noteFilter.toJsonObject()
 			: this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()].eqFilter.toJsonObject();
-		window.localStorage.setItem("filterCopy", JSON.stringify(filterCopy));
+		this._doc.prefs.saveSetting("filterCopy", JSON.stringify(filterCopy));
 	}
 
 	private _pasteFilterSettings = (): void => {
 
 		let filterCopy: FilterSettings = new FilterSettings();
-		filterCopy.fromJsonObject(JSON.parse(String(window.localStorage.getItem("filterCopy"))));
+		filterCopy.fromJsonObject(JSON.parse(String(this._doc.prefs.loadSetting("filterCopy"))));
 		if (filterCopy != null) {
 			this.filterEditor.swapToSettings(filterCopy, true);
 		}

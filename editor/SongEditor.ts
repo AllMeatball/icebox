@@ -3684,14 +3684,14 @@ export class SongEditor {
         const instrumentCopy: any = instrument.toJsonObject();
         instrumentCopy["isDrum"] = this._doc.song.getChannelIsNoise(this._doc.channel);
         instrumentCopy["isMod"] = this._doc.song.getChannelIsMod(this._doc.channel);
-        window.localStorage.setItem("instrumentCopy", JSON.stringify(instrumentCopy));
+        this._doc.prefs.saveSetting("instrumentCopy", JSON.stringify(instrumentCopy));
         this.refocusStage();
     }
 
     private _pasteInstrument = (): void => {
         const channel: Channel = this._doc.song.channels[this._doc.channel];
         const instrument: Instrument = channel.instruments[this._doc.getCurrentInstrument()];
-        const instrumentCopy: any = JSON.parse(String(window.localStorage.getItem("instrumentCopy")));
+        const instrumentCopy: any = JSON.parse(String(this._doc.prefs.loadSetting("instrumentCopy")));
         if (instrumentCopy != null && instrumentCopy["isDrum"] == this._doc.song.getChannelIsNoise(this._doc.channel) && instrumentCopy["isMod"] == this._doc.song.getChannelIsMod(this._doc.channel)) {
             this._doc.record(new ChangePasteInstrument(this._doc, instrument, instrumentCopy));
         }

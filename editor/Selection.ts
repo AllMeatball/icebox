@@ -332,7 +332,7 @@ export class Selection {
             "partDuration": this.patternSelectionActive ? this.patternSelectionEnd - this.patternSelectionStart : this._doc.song.beatsPerBar * Config.partsPerBeat,
             "channels": channels,
         };
-        window.localStorage.setItem("selectionCopy", JSON.stringify(selectionCopy));
+        this._doc.prefs.saveSetting("selectionCopy", JSON.stringify(selectionCopy));
         // Clear selection after copy
         new ChangePatternSelection(this._doc, 0, 0);
     }
@@ -343,7 +343,7 @@ export class Selection {
     // also trying to reuse patterns where it makes sense to do so, especially 
     // in the same channel it was copied from.
     public pasteNotes(): void {
-        const selectionCopy: SelectionCopy | null = JSON.parse(String(window.localStorage.getItem("selectionCopy")));
+        const selectionCopy: SelectionCopy | null = JSON.parse(String(this._doc.prefs.loadSetting("selectionCopy")));
         if (selectionCopy == null) return;
         const channelCopies: ChannelCopy[] = selectionCopy["channels"] || [];
         const copiedPartDuration: number = selectionCopy["partDuration"] >>> 0;
@@ -514,7 +514,7 @@ export class Selection {
     }
 
     public pasteNumbers(): void {
-        const selectionCopy: SelectionCopy | null = JSON.parse(String(window.localStorage.getItem("selectionCopy")));
+        const selectionCopy: SelectionCopy | null = JSON.parse(String(this._doc.prefs.loadSetting("selectionCopy")));
         if (selectionCopy == null) return;
         const channelCopies: ChannelCopy[] = selectionCopy["channels"] || [];
 

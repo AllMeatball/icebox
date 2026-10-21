@@ -129,7 +129,7 @@ export class ExportPrompt implements Prompt {
             this._enableOutro.disabled = false;
         }
 
-        const lastExportFormat: string | null = window.localStorage.getItem("exportFormat");
+        const lastExportFormat: string | null =         this._doc.prefs.loadSetting("exportFormat");
         if (lastExportFormat != null) {
             this._formatSelect.value = lastExportFormat;
         }
@@ -213,7 +213,7 @@ export class ExportPrompt implements Prompt {
     private _export = (): void => {
         if (this.outputStarted == true)
             return;
-        window.localStorage.setItem("exportFormat", this._formatSelect.value);
+        this._doc.prefs.saveSetting("exportFormat", this._formatSelect.value);
         switch (this._formatSelect.value) {
             case "wav":
                 this.outputStarted = true;

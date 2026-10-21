@@ -52,7 +52,7 @@ export class MidiInputHandler {
 	private _takeMidiHandlerFocus = (event?: Event) => {
 		// Record that this browser tab is the one that should handle midi
 		// events and any other open tabs should ignore midi events for now.
-		localStorage.setItem("midiHandlerId", id);
+		this._doc.prefs.saveSetting("midiHandlerId", id);
 	}
 	
 	private _handleStateChange = (event: MIDIConnectionEvent) => {
@@ -79,7 +79,7 @@ export class MidiInputHandler {
 	
 	private _onMidiMessage = (event: MIDIMessageEvent) => {
 		// Ignore midi events if disabled or a different tab is handling them.
-		if (!this._doc.prefs.enableMidi || localStorage.getItem("midiHandlerId") != id) return;
+		if (!this._doc.prefs.enableMidi || this._doc.prefs.loadSetting("midiHandlerId") != id) return;
 		
 		const isDrum: boolean = this._doc.song.getChannelIsNoise(this._doc.channel);
 		let [eventType, key, velocity] = event.data;

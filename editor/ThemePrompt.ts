@@ -49,7 +49,7 @@ export class ThemePrompt implements Prompt {
 		),
 		this._cancelButton,
 	);
-	private readonly lastTheme: string | null = window.localStorage.getItem("colorTheme")
+	private readonly lastTheme: string | null = this._doc.prefs.loadSetting("colorTheme")
 
 	constructor(private _doc: SongDocument) {
 		if (this.lastTheme != null) {
@@ -83,7 +83,7 @@ export class ThemePrompt implements Prompt {
 	}
 
 	private _saveChanges = (): void => {
-		window.localStorage.setItem("colorTheme", this._themeSelect.value);
+		this._doc.prefs.saveSetting("colorTheme", this._themeSelect.value);
 		this._doc.prompt = null;
 		this._doc.prefs.colorTheme = this._themeSelect.value;
 		this._doc.undo();

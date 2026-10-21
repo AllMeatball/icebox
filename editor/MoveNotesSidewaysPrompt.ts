@@ -41,7 +41,7 @@ export class MoveNotesSidewaysPrompt implements Prompt {
 		this._beatsStepper.min = (-this._doc.song.beatsPerBar) + "";
 		this._beatsStepper.max = this._doc.song.beatsPerBar + "";
 			
-		const lastStrategy: string | null = window.localStorage.getItem("moveNotesSidewaysStrategy");
+		const lastStrategy: string | null = this._doc.prefs.loadSetting("moveNotesSidewaysStrategy");
 		if (lastStrategy != null) {
 			this._conversionStrategySelect.value = lastStrategy;
 		}
@@ -81,7 +81,7 @@ export class MoveNotesSidewaysPrompt implements Prompt {
 	}
 		
 	private _saveChanges = (): void => {
-		window.localStorage.setItem("moveNotesSidewaysStrategy", this._conversionStrategySelect.value);
+		this._doc.prefs.saveSetting("moveNotesSidewaysStrategy", this._conversionStrategySelect.value);
 		this._doc.prompt = null;
 		this._doc.record(new ChangeMoveNotesSideways(this._doc, +this._beatsStepper.value, this._conversionStrategySelect.value), true);
 	}
