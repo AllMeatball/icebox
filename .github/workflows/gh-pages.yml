@@ -1,5 +1,4 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy/compile IceBox for Github Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -37,6 +36,7 @@ jobs:
         run: |
           npm install
           npm run build-editor
+          npm run cleanup-gh-pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
