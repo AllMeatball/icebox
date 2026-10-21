@@ -16,6 +16,13 @@ const beepboxEditorContainer: HTMLElement = document.getElementById("beepboxEdit
 beepboxEditorContainer.appendChild(editor.mainLayer);
 editor.whenUpdated();
 
+// set version tag
+try {
+	document.getElementById("versionTag")!.textContent = "("+EditorConfig.version+")";
+} catch (error)  {
+	console.warn(`Failed to set versionTag: ${error}`)
+}
+
 // Fade-in transitions
 editor.mainLayer.className += " load";
 editor.mainLayer.getElementsByClassName("pattern-area")[0].className += " load";

@@ -70,7 +70,7 @@ export class Preferences {
 		this.keyboardLayout = this.loadSetting("keyboardLayout") || "wickiHayden";
 		this.bassOffset = (+(<any>this.loadSetting("bassOffset"))) || 0;
 		this.layout = this.loadSetting("layout") || "small";
-		this.colorTheme = this.loadSetting("colorTheme") || "jummbox classic";
+		this.colorTheme = this.loadSetting("colorTheme") || "blutonium";
 		this.visibleOctaves = ((<any>this.loadSetting("visibleOctaves")) >>> 0) || Preferences.defaultVisibleOctaves;
 		
 		const defaultScale: Scale | undefined = Config.scales.dictionary[this.loadSetting("defaultScale")!];

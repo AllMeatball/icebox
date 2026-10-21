@@ -2343,13 +2343,16 @@ export class Channel {
 }
 
 export class Song {
-    private static readonly _format: string = "JummBox";
+    private static readonly _format: string = "IceBox";
     private static readonly _oldestBeepboxVersion: number = 2;
     private static readonly _latestBeepboxVersion: number = 9;
     private static readonly _oldestJummBoxVersion: number = 1;
     private static readonly _latestJummBoxVersion: number = 6;
-    // One-character variant detection at the start of URL to distinguish variants such as JummBox.
-    private static readonly _variant = 0x6A; //"j" ~ jummbox
+    private static readonly _oldestIceBoxVersion:  number = 1;
+    private static readonly _latestIceBoxVersion:  number = 1;
+
+    // One-character variant detection at the start of URL to distinguish variants such as JummBox or IceBox.
+    private static readonly _variant = 0x49; //"i" ~ icebox
 
     public title: string;
     public scale: number;
@@ -3114,22 +3117,31 @@ export class Song {
         }
 
         const variantTest: number = compressed.charCodeAt(charIndex);
-        let fromBeepBox: boolean;
-        let fromJummBox: boolean;
+        let fromBeepBox: boolean = false;
+        let fromJummBox: boolean = false;
+        let fromIceBox:  boolean = false;
 
+        // FIXME: seperate the logic for different revisions
         // Detect variant here. If version doesn't match known variant, assume it is a vanilla string which does not report variant.
-        if (variantTest == 0x6A) { //"j"
-            fromBeepBox = false;
+        if (variantTest == 0x49) { //"I"
+            // TODO: Actually start using the `fromIceBox` flag instead of `fromJummBox`
+            fromIceBox  = true;
+            fromJummBox = true;
+            charIndex++;
+        } else if (variantTest == 0x6A) { //"j"
             fromJummBox = true;
             charIndex++;
         } else {
             fromBeepBox = true;
-            fromJummBox = false;
         }
 
         const version: number = base64CharCodeToInt[compressed.charCodeAt(charIndex++)];
         if (fromBeepBox && (version == -1 || version > Song._latestBeepboxVersion || version < Song._oldestBeepboxVersion)) return;
         if (fromJummBox && (version == -1 || version > Song._latestJummBoxVersion || version < Song._oldestJummBoxVersion)) return;
+        if (fromIceBox  && (version == -1 || version > Song._latestIceBoxVersion || version < Song._oldestIceBoxVersion)) {
+            // TODO: return when the version compartmentalization is done
+        }
+
         const beforeTwo: boolean = version < 2;
         const beforeThree: boolean = version < 3;
         const beforeFour: boolean = version < 4;
@@ -4773,7 +4785,7 @@ export class Song {
         return {
             "name": this.title,
             "format": Song._format,
-            "version": Song._latestJummBoxVersion,
+            "version": Song._latestIceBoxVersion,
             "scale": Config.scales[this.scale].name,
             "key": Config.keys[this.key].name,
             "introBars": this.loopStart,
