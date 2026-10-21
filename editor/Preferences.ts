@@ -38,11 +38,11 @@ export class Preferences {
 		this.reload();
 	}
 
-	public loadSetting(key: String): any {
+	public loadSetting(key: string): any {
 		return window.localStorage.getItem(LOCALSTORAGE_SUFFIX+key);
 	}
 
-	public saveSetting(key: String, value: any): void {
+	public saveSetting(key: string, value: string): void {
 		window.localStorage.setItem(LOCALSTORAGE_SUFFIX+key, value);
 	}
 	
