@@ -16,11 +16,13 @@ function lerp(low: number, high: number, t: number): number {
     return low + t * (high - low);
 }
 
-function save(blob: Blob, name: string): void {
+function save(blob: Blob, name: string, extension: string): void {
     if ((<any>navigator).msSaveOrOpenBlob) {
         (<any>navigator).msSaveOrOpenBlob(blob, name);
         return;
     }
+
+    name += extension;
 
     const anchor: HTMLAnchorElement = document.createElement("a");
     if (anchor.download != undefined) {
@@ -54,12 +56,24 @@ export class ExportPrompt implements Prompt {
     private readonly _loopDropDown: HTMLInputElement = input({ style: "width: 2em;", type: "number", min: "1", max: "4", step: "1" });
     private readonly _enableOutro: HTMLInputElement = input({ type: "checkbox" });
     private readonly _formatSelect: HTMLSelectElement = select({ style: "width: 100%;" },
-        option({ value: "wav" }, "Export to .wav file."),
-        option({ value: "mp3" }, "Export to .mp3 file."),
+        option({ value: "wav" },  "Export to .wav file."),
+        option({ value: "mp3" },  "Export to .mp3 file."),
         option({ value: "midi" }, "Export to .mid file."),
         option({ value: "json" }, "Export to .json file."),
         option({ value: "html" }, "Export to .html file."),
     );
+
+    // TODO: make this actually display the filename for a more practial example
+    private readonly _filenameCaseSelect: HTMLSelectElement = select({ style: "width: 100%;" },
+        option({ value: "none" },   "Leave as is"),
+        option({ value: "kebab" },  "kebab-case"),
+        option({ value: "snake" },  "snake_case"),
+        option({ value: "camel" },  "camelCase"),
+        option({ value: "pascal" }, "PascalCase"),
+    );
+
+    // private readonly _joinNumbers: HTMLInputElement = input({ type: "checkbox" });
+
     private readonly _cancelButton: HTMLButtonElement = button({ class: "cancelButton" });
     private readonly _exportButton: HTMLButtonElement = button({ class: "exportButton", style: "width:45%;" }, "Export");
     private readonly _outputProgressBar: HTMLDivElement = div({ style: `width: 0%; background: ${ColorConfig.loopAccent}; height: 100%; position: absolute; z-index: 2;` });
@@ -103,6 +117,16 @@ export class ExportPrompt implements Prompt {
             ),
         ),
         div({ class: "selectContainer", style: "width: 100%;" }, this._formatSelect),
+        div({ style: "display: table; width: 100%;" },
+            div({ style: "display: table-row;" },
+                div({ style: "display: table-cell;" }, "Filename Casing:"),
+            ),
+            div({ style: "display: table-row;" },
+                div({ class: "selectContainer", style: "display: table-cell; vertical-align: middle;" }, this._filenameCaseSelect)
+                // div({ style: "display: table-cell; vertical-align: middle;" }, this._loopDropDown),
+                // div({ style: "display: table-cell; vertical-align: middle;" }, this._enableOutro),
+            ),
+        ),
         div({ style: "text-align: left;" }, "Exporting can be slow. Reloading the page or clicking the X will cancel it. Please be patient."),
         this._outputProgressContainer,
         div({ style: "display: flex; flex-direction: row-reverse; justify-content: space-between;" },
@@ -150,6 +174,64 @@ export class ExportPrompt implements Prompt {
         ExportPrompt._validateFileName(null, this._fileName);
 
         (this._computedSamplesLabel.firstChild as Text).textContent = this.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1));
+
+        for (const child of this._filenameCaseSelect.children) {
+            if (child.tagName != "option")
+                continue;
+
+            const caseType = <HTMLOptionElement>child;
+
+            const caseValueFormatted = this._formatAsCase(caseType.value, caseType.value);
+            const songNameFormatted  = this._formatAsCase(this._fileName.value, caseType.value);
+
+            caseType.textContent = `${caseValueFormatted}: ${songNameFormatted}`;
+        }
+    }
+
+    private _formatAsCase(text: string, case_type?: string): string {
+        let result : string        = text.trim();
+        let parts  : Array<string> = result.toLowerCase().split(/\s+/); // NOTE: consider moving this into each `case` rather than potentially just uselessly computing it.
+
+        // Snipet for camelCase and PascalCase captialization:
+        // Source - https://stackoverflow.com/a/1026087
+        // Posted by Steve Harrison, modified by community. See post 'Timeline' for change history
+        // Retrieved 2026-10-22, License - CC BY-SA 4.0
+        //
+        // Original Snipet code:
+        // ```js
+        // function capitalizeFirstLetter(val) {
+        //     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+        // }
+        // ```
+
+        switch (case_type || this._filenameCaseSelect.value) {
+            case "kebab": // kebab-case
+                result = parts.join('-');
+                break;
+            case "snake": // snake_case
+                result = parts.join('_');
+                break;
+            case "camel": // camelCase
+                result = parts.map((part, i) => {
+                    // captialize words after the first one
+                    if (i > 0)
+                        return part.charAt(0).toUpperCase() + part.slice(1);
+
+                    return part;
+                }).join('');
+                break;
+            case "pascal": // PascalCase
+                result = parts.map((part) => {
+                    return part.charAt(0).toUpperCase() + part.slice(1);
+                }).join('');
+                break;
+            case "none":   // No case (as is)
+            default:
+                // does nothing
+                break;
+        }
+
+        return result;
     }
 
     // Could probably be moved to doc or synth. Fine here for now until needed by something else.
@@ -385,7 +467,7 @@ export class ExportPrompt implements Prompt {
         }
 
         const blob: Blob = new Blob([arrayBuffer], { type: "audio/wav" });
-        save(blob, this._fileName.value.trim() + ".wav");
+        save(blob, this._formatAsCase(this._fileName.value), ".wav");
 
         this._close();
     }
@@ -419,7 +501,7 @@ export class ExportPrompt implements Prompt {
             if (mp3buf.length > 0) mp3Data.push(mp3buf);
 
             const blob: Blob = new Blob(mp3Data, { type: "audio/mp3" });
-            save(blob, this._fileName.value.trim() + ".mp3");
+            save(blob, this._formatAsCase(this._fileName.value), ".mp3");
             this._close();
         }
 
@@ -865,7 +947,7 @@ export class ExportPrompt implements Prompt {
 		}
 		
 		const blob: Blob = new Blob([writer.toCompactArrayBuffer()], {type: "audio/midi"});
-		save(blob, this._fileName.value.trim() + ".mid");
+		save(blob, this._formatAsCase(this._fileName.value), ".mid");
 		
 		this._close();
 	}
@@ -874,7 +956,7 @@ export class ExportPrompt implements Prompt {
 		const jsonObject: Object = this._doc.song.toJsonObject(this._enableIntro.checked, Number(this._loopDropDown.value), this._enableOutro.checked);
 		const jsonString: string = JSON.stringify(jsonObject, null, '\t');
 		const blob: Blob = new Blob([jsonString], {type: "application/json"});
-		save(blob, this._fileName.value.trim() + ".json");
+		save(blob, this._formatAsCase(this._fileName.value), ".json");
 		this._close();
     }
 
@@ -906,7 +988,7 @@ You should be redirected to the song at:<br /><br />
 </script>
 `;
         const blob: Blob = new Blob([fileContents], { type: "text/html" });
-        save(blob, this._fileName.value.trim() + ".html");
+        save(blob, this._formatAsCase(this._fileName.value), ".html");
         this._close();
     }
 }
