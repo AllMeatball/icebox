@@ -165,15 +165,17 @@ export class ExportPrompt implements Prompt {
         this._loopDropDown.addEventListener("blur", ExportPrompt._validateNumber);
         this._exportButton.addEventListener("click", this._export);
         this._cancelButton.addEventListener("click", this._close);
-        this._enableOutro.addEventListener("click", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
-        this._enableIntro.addEventListener("click", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
-        this._loopDropDown.addEventListener("change", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1)); });
+
+        // NOTE (@allmeatball): `+this._loopDropDown.value` seems to be a quick way to convert `this._loopDropDown.value` into a number?
+        this._enableOutro.addEventListener("click", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this._doc.synth.getSongTime(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value); });
+        this._enableIntro.addEventListener("click", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this._doc.synth.getSongTime(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value); });
+        this._loopDropDown.addEventListener("change", () => { (this._computedSamplesLabel.firstChild as Text).textContent = this._doc.synth.getSongTime(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value); });
         this.container.addEventListener("keydown", this._whenKeyPressed);
 
         this._fileName.value = _doc.song.title;
         ExportPrompt._validateFileName(null, this._fileName);
 
-        (this._computedSamplesLabel.firstChild as Text).textContent = this.samplesToTime(this._doc.synth.getTotalSamples(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value - 1));
+        (this._computedSamplesLabel.firstChild as Text).textContent = this._doc.synth.getSongTime(this._enableIntro.checked, this._enableOutro.checked, +this._loopDropDown.value);
 
         for (const child of this._filenameCaseSelect.children) {
             if (child.tagName != "option")
@@ -232,14 +234,6 @@ export class ExportPrompt implements Prompt {
         }
 
         return result;
-    }
-
-    // Could probably be moved to doc or synth. Fine here for now until needed by something else.
-    private samplesToTime(samples: number): string {
-        const rawSeconds: number = Math.round(samples / this._doc.synth.samplesPerSecond);
-        const seconds: number = rawSeconds % 60;
-        const minutes: number = Math.floor(rawSeconds / 60);
-        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
 
     private _close = (): void => {

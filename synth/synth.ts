@@ -7011,6 +7011,17 @@ export class Synth {
         }
     }
 
+    public samplesToTime(samples: number): string {
+        const rawSeconds: number = Math.round(samples / this.samplesPerSecond);
+        const seconds: number = rawSeconds % 60;
+        const minutes: number = Math.floor(rawSeconds / 60);
+        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    }
+
+    public getSongTime(enableIntro: boolean, enableOutro: boolean, useLoopCount: number = this.loopRepeatCount): string {
+        return this.samplesToTime(this.getTotalSamples(enableIntro, enableOutro, useLoopCount - 1));
+    }
+
     public getTotalBars(enableIntro: boolean, enableOutro: boolean, useLoopCount: number = this.loopRepeatCount): number {
         if (this.song == null) throw new Error();
         let bars: number = this.song.loopLength * (useLoopCount + 1);

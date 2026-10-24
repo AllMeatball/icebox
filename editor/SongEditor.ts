@@ -365,6 +365,9 @@ export class SongEditor {
     private readonly _volumeBarBox: HTMLDivElement = div({ class: "playback-volume-bar", style: "height: 12px; align-self: center;" },
         this._volumeBarContainer,
     );
+
+    private readonly _songLengthIndicator: HTMLDivElement =  div({ style: `text-align: center; margin: 3px 0;` }, "(0:00)");
+
     private readonly _fileMenu: HTMLSelectElement = select({ style: "width: 100%;" },
         option({ selected: true, disabled: true, hidden: false }, "File"), // todo: "hidden" should be true but looks wrong on mac chrome, adds checkmark next to first visible option even though it's not selected. :(
         option({ value: "new" }, "+ New Blank Song"),
@@ -802,6 +805,7 @@ export class SongEditor {
             div({ style: `text-align: center; margin: 3px 0; color: ${ColorConfig.secondaryText};` },
                 this._songTitleInputBox.input,
             ),
+            this._songLengthIndicator
         ),
         div({ class: "play-pause-area" },
             this._volumeBarBox,
@@ -1515,6 +1519,9 @@ export class SongEditor {
         if (document.activeElement != this._patternEditor.modDragValueLabel && this._patternEditor.editingModLabel) {
             this._patternEditor.stopEditingModLabel(false);
         }
+
+        // FIXME: Don't recalculate this for every single event.
+        this._songLengthIndicator.textContent = `(${this._doc.synth.getSongTime(true, true, 1)})`;
 
         this._piano.container.style.display = prefs.showLetters ? "" : "none";
         this._octaveScrollBar.container.style.display = prefs.showScrollBar ? "" : "none";
